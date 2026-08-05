@@ -1,0 +1,10 @@
+version: 2
+
+sources:
+  - name: openfda
+    description: "Rapports d'effets indésirables médicamenteux (FAERS), extraits via l'API openFDA."
+    tables:
+      - name: raw_adverse_events
+        description: "Un rapport par ligne, structure brute telle que renvoyée par l'API, avant toute transformation."
+        meta:
+          external_location: "../data/raw/*.json"
