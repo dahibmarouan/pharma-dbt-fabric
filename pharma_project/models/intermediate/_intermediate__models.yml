@@ -1,0 +1,31 @@
+version: 2
+
+models:
+  - name: int_openfda__adverse_events_deduped
+    description: "Rapports d'effets indésirables après exclusion des doublons signalés par openFDA."
+    columns:
+      - name: report_id
+        description: "Identifiant unique du rapport, garanti unique après dédoublonnage."
+        tests:
+          - unique
+          - not_null
+
+  - name: int_openfda__drugs_deduped
+    description: "Médicaments associés aux rapports non dupliqués."
+    columns:
+      - name: report_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('int_openfda__adverse_events_deduped')
+              field: report_id
+
+  - name: int_openfda__reactions_deduped
+    description: "Réactions associées aux rapports non dupliqués."
+    columns:
+      - name: report_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('int_openfda__adverse_events_deduped')
+              field: report_id
