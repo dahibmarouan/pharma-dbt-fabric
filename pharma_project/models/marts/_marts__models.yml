@@ -1,0 +1,29 @@
+version: 2
+
+models:
+  - name: fct_drug_adverse_events
+    description: "Un médicament associé à un rapport d'effet indésirable, avec les informations du rapport (gravité, date, patient)."
+    columns:
+      - name: report_id
+        description: "Référence vers le rapport source."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('int_openfda__adverse_events_deduped')
+              field: report_id
+      - name: drug_name
+        tests:
+          - not_null
+
+  - name: fct_reaction_adverse_events
+    description: "Une réaction associée à un rapport d'effet indésirable, avec les informations du rapport (gravité, date, patient)."
+    columns:
+      - name: report_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('int_openfda__adverse_events_deduped')
+              field: report_id
+      - name: reaction_name
+        tests:
+          - not_null
