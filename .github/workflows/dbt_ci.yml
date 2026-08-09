@@ -1,0 +1,46 @@
+name: CI dbt
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Recuperer le code
+        uses: actions/checkout@v4
+
+      - name: Installer Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Installer les dependances
+        run: pip install -r requirements.txt
+
+      - name: Extraire les donnees openFDA
+        working-directory: .
+        env:
+          OPENFDA_API_KEY: ${{ secrets.OPENFDA_API_KEY }}
+        run: python scripts/extract_openfda.py
+
+      - name: Creer le profil dbt
+        run: |
+          mkdir -p ~/.dbt
+          cat << EOF > ~/.dbt/profiles.yml
+          pharma_adverse_events:
+            target: dev
+            outputs:
+              dev:
+                type: duckdb
+                path: 'data/warehouse.duckdb'
+                threads: 4
+          EOF
+
+      - name: dbt build
+        working-directory: pharma_project
+        run: dbt build
