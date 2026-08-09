@@ -2,30 +2,30 @@ version: 2
 
 models:
   - name: stg_openfda__adverse_events
-    description: "Un rapport d'effet indésirable par ligne, avec les champs simples nettoyés et typés."
+    description: "One adverse event report per row, with simple fields cleaned and typed."
     columns:
       - name: report_id
-        description: "Identifiant unique du rapport."
+        description: "Unique identifier of the report."
         tests:
           - unique
           - not_null
       - name: patient_age
-        description: "Âge du patient au moment du rapport, en années. Peut être NULL si non renseigné."
+        description: "Patient's age at the time of the report, in years. Can be NULL if not reported."
 
   - name: stg_openfda__drugs
-    description: "Un médicament mentionné par rapport, une ligne par médicament (un rapport peut en avoir plusieurs)."
+    description: "One drug mentioned per report, one row per drug (a report can have several)."
     columns:
       - name: report_id
-        description: "Référence vers le rapport parent."
+        description: "Reference to the parent report."
         tests:
           - not_null
       - name: drug_name
-        description: "Nom du médicament tel que rapporté."
+        description: "Drug name as reported."
         tests:
           - not_null
 
   - name: stg_openfda__reactions
-    description: "Une réaction mentionnée par rapport, une ligne par réaction."
+    description: "One reaction mentioned per report, one row per reaction."
     columns:
       - name: report_id
         tests:

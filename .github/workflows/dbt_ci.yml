@@ -11,24 +11,24 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Recuperer le code
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Installer Python
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
-      - name: Installer les dependances
+      - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Extraire les donnees openFDA
+      - name: Extract openFDA data
         working-directory: .
         env:
           OPENFDA_API_KEY: ${{ secrets.OPENFDA_API_KEY }}
         run: python scripts/extract_openfda.py
 
-      - name: Creer le profil dbt
+      - name: Create dbt profile
         run: |
           mkdir -p ~/.dbt
           cat << EOF > ~/.dbt/profiles.yml
@@ -41,7 +41,7 @@ jobs:
                 threads: 4
           EOF
 
-      - name: Preparer le dossier de la base DuckDB
+      - name: Prepare DuckDB data directory
         working-directory: pharma_project
         run: mkdir -p data
 

@@ -1,12 +1,12 @@
--- Pour les 5 médicaments les plus associés à des cas graves,
--- quelles sont leurs 3 réactions les plus fréquentes ?
--- (quelles paires médicament/réaction reviennent le plus souvent ensemble)
+-- For the top 5 drugs most associated with serious cases,
+-- what are their 3 most frequent reactions?
+-- (which drug/reaction pairs occur together most often)
 
 with drug_reactions as (
     select
         drugs.drug_name,
         reactions.reaction_name,
-        count(*) as frequence
+        count(*) as frequency
     from {{ ref('int_openfda__drugs_deduped') }} as drugs
     inner join {{ ref('int_openfda__reactions_deduped') }} as reactions
         on drugs.report_id = reactions.report_id
@@ -14,7 +14,7 @@ with drug_reactions as (
 ),
 
 drug_totals as (
-    select drug_name, sum(frequence) as total_mentions
+    select drug_name, sum(frequency) as total_mentions
     from drug_reactions
     group by drug_name
     order by total_mentions desc
@@ -26,17 +26,17 @@ ranked as (
         drug_reactions.drug_name,
         drug_totals.total_mentions,
         drug_reactions.reaction_name,
-        drug_reactions.frequence,
+        drug_reactions.frequency,
         row_number() over (
             partition by drug_reactions.drug_name
-            order by drug_reactions.frequence desc
-        ) as rang
+            order by drug_reactions.frequency desc
+        ) as rank
     from drug_reactions
     inner join drug_totals
         on drug_reactions.drug_name = drug_totals.drug_name
 )
 
-select drug_name, total_mentions, reaction_name, frequence
+select drug_name, total_mentions, reaction_name, frequency
 from ranked
-where rang <= 3
-order by total_mentions desc, frequence desc
+where rank <= 3
+order by total_mentions desc, frequency desc

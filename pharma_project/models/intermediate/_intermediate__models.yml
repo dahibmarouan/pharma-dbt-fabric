@@ -2,16 +2,16 @@ version: 2
 
 models:
   - name: int_openfda__adverse_events_deduped
-    description: "Rapports d'effets indésirables après exclusion des doublons signalés par openFDA."
+    description: "Adverse event reports after excluding duplicates flagged by openFDA."
     columns:
       - name: report_id
-        description: "Identifiant unique du rapport, garanti unique après dédoublonnage."
+        description: "Unique report identifier, guaranteed unique after deduplication."
         tests:
           - unique
           - not_null
 
   - name: int_openfda__drugs_deduped
-    description: "Médicaments associés aux rapports non dupliqués."
+    description: "Drugs associated with non-duplicate reports."
     columns:
       - name: report_id
         tests:
@@ -19,9 +19,11 @@ models:
           - relationships:
               to: ref('int_openfda__adverse_events_deduped')
               field: report_id
+      - name: drug_name
+        description: "Drug name as reported."
 
   - name: int_openfda__reactions_deduped
-    description: "Réactions associées aux rapports non dupliqués."
+    description: "Reactions associated with non-duplicate reports."
     columns:
       - name: report_id
         tests:
@@ -29,3 +31,5 @@ models:
           - relationships:
               to: ref('int_openfda__adverse_events_deduped')
               field: report_id
+      - name: reaction_name
+        description: "Reaction name as reported."

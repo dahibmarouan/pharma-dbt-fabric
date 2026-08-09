@@ -16,7 +16,7 @@ OUTPUT_DIR = Path("data/raw")
 
 
 def fetch_page(skip: int, limit: int) -> dict:
-    """Récupère une 'page' de résultats depuis l'API openFDA."""
+    """Fetch a 'page' of results from the openFDA API."""
     params = {
         "api_key": API_KEY,
         "limit": limit,
@@ -37,11 +37,11 @@ def main():
         data = fetch_page(skip=skip, limit=PAGE_SIZE)
         results = data.get("results", [])
         if not results:
-            print("Plus de résultats disponibles, arrêt.")
+            print("No more results available, stopping.")
             break
 
-        # Dédoublonnage défensif : skip/limit peut renvoyer un même rapport
-        # sur deux pages quand plusieurs rapports partagent la même date de tri.
+        # Defensive deduplication: skip/limit can return the same report
+        # on two pages when several reports share the same sort date.
         new_results = []
         for r in results:
             rid = r.get("safetyreportid")
@@ -51,7 +51,7 @@ def main():
 
         output_file = OUTPUT_DIR / f"page_{page_number:03d}.json"
         output_file.write_text(json.dumps(new_results, indent=2))
-        print(f"Page {page_number} : {len(new_results)} rapports sauvegardés ({len(results) - len(new_results)} doublons filtrés)")
+        print(f"Page {page_number}: {len(new_results)} reports saved ({len(results) - len(new_results)} duplicates filtered)")
 
         skip += PAGE_SIZE
         page_number += 1

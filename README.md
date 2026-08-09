@@ -1,40 +1,39 @@
 # Pharma DBT Fabric
 
-Pipeline de données sur les effets indésirables médicamenteux, construit avec
-Python, dbt et DuckDB — projet portfolio pour une reconversion vers le métier
-d'Analytics Engineer.
+Data pipeline on adverse drug event reports, built with Python, dbt, and
+DuckDB — a portfolio project for a career transition into the Analytics
+Engineer role.
 
-## Question business
+## Business Question
 
-Ce projet répond à une question de pharmacovigilance : quels médicaments
-génèrent le plus de signalements d'effets indésirables graves, et avec
-quelles réactions ces signalements sont-ils le plus souvent associés ?
+This project answers a pharmacovigilance question: which drugs generate the
+most serious adverse event reports, and which reactions are most commonly
+associated with them?
 
-Source : rapports d'effets indésirables (FAERS) via l'API publique openFDA.
+Source: adverse event reports (FAERS) via the public openFDA API.
 
 ## Architecture
 
-- **Extraction** : script Python paginant sur l'API openFDA, sauvegarde en JSON brut.
-- **Chargement** : DuckDB lit les fichiers JSON directement, sans étape de copie séparée.
-- **Transformation (dbt)**, en trois couches :
-  - `staging` : nettoyage, typage, aplatissement du JSON imbriqué.
-  - `intermediate` : dédoublonnage des rapports et propagation aux médicaments/réactions.
-  - `marts` : deux tables de faits (`fct_drug_adverse_events`, `fct_reaction_adverse_events`) répondant à la question business.
-- **Restitution** : dashboard Power BI (à venir, en attente d'un accès Microsoft Fabric).
+- **Extraction**: Python script paginating through the openFDA API, saving raw JSON.
+- **Loading**: DuckDB reads the JSON files directly, with no separate copy/load step.
+- **Transformation (dbt)**, in three layers:
+  - `staging`: cleaning, typing, flattening of nested JSON.
+  - `intermediate`: deduplication of reports and propagation to drugs/reactions.
+  - `marts`: two fact tables (`fct_drug_adverse_events`, `fct_reaction_adverse_events`) answering the business question.
+- **Delivery**: Power BI dashboard, built locally with Power BI Desktop from CSV exports (see the "Power BI Dashboard" section below).
 
-### Pourquoi DuckDB plutôt que Microsoft Fabric
+### Why DuckDB Instead of Microsoft Fabric
 
-Le projet visait initialement Microsoft Fabric. L'essai gratuit s'est heurté à
-une restriction d'éligibilité liée aux tenants personnels récemment créés
-(problème documenté, indépendant de la configuration du projet). Le
-développement a été découplé de l'entrepôt cible : le projet tourne sur
-DuckDB en local, et grâce aux adaptateurs dbt, basculer vers Fabric (ou tout
-autre entrepôt) ne nécessite qu'un changement de configuration, sans
-réécriture du SQL.
+The project originally targeted Microsoft Fabric. The free trial ran into an
+eligibility restriction affecting recently created personal tenants (a
+documented issue, unrelated to the project's own configuration). Development
+was decoupled from the target warehouse: the project runs on DuckDB locally,
+and thanks to dbt's adapter architecture, switching to Fabric (or any other
+warehouse) only requires a configuration change, with no SQL rewrite.
 
-## Comment lancer ce projet
+## How to Run This Project
 
-1. Cloner le repo et créer un environnement virtuel :
+1. Clone the repo and create a virtual environment:
 ```bash
    git clone https://github.com/dahibmarouan/pharma-dbt-fabric.git
    cd pharma-dbt-fabric
@@ -43,63 +42,78 @@ réécriture du SQL.
    pip install -r requirements.txt
 ```
 
-2. Créer un fichier `.env` à la racine avec une clé API openFDA gratuite
-   (obtenue sur https://open.fda.gov/apis/authentication/)
+2. Create a `.env` file at the project root with a free openFDA API key
+   (obtained at https://open.fda.gov/apis/authentication/)
 
-3. Lancer l'extraction des données brutes :
+3. Run the raw data extraction:
 ```bash
    python scripts/extract_openfda.py
 ```
 
-4. Construire et tester le projet dbt :
+4. Build and test the dbt project (this single command builds all three
+   layers — staging, intermediate, and marts — in dependency order, and
+   runs every test):
 ```bash
    cd pharma_project
    dbt build
 ```
 
-5. (Optionnel) Générer et consulter la documentation :
+5. (Optional) Generate and view the documentation:
 ```bash
    dbt docs generate
    dbt docs serve
 ```
 
-## Mettre à jour le dashboard Power BI
+## Power BI Dashboard
 
-Le dashboard importe des données depuis des fichiers CSV statiques (le
-connecteur DuckDB natif de Power BI repose sur un driver ODBC peu fiable en
-pratique). Pour rafraîchir les chiffres après une modification des données :
+The dashboard answers the business question through four visuals:
+- Top 10 drugs associated with serious cases
+- Top 10 reactions associated with serious cases
+- Distribution of serious cases by age bracket
+- Top 3 serious reactions by age bracket (DAX measure: partitioned `RANKX`)
 
-1. Depuis la racine du projet (`venv` actif), lancer le script qui reconstruit
-   les modèles dbt et régénère les exports CSV :
+File: `dashboard/pharma_dashboard.pbix` (requires Power BI Desktop, free).
+
+![Power BI dashboard overview](image.png)
+
+## Updating the Power BI Dashboard
+
+The dashboard imports data from static CSV files (Power BI's native DuckDB
+connector relies on an ODBC driver that proves unreliable in practice). To
+refresh the figures after a data change:
+
+1. From the project root (with `venv` active), run the script that rebuilds
+   the dbt models and regenerates the CSV exports:
 ```powershell
    .\scripts\refresh_data.ps1
 ```
-2. Dans Power BI Desktop : Accueil → Actualiser.
+2. In Power BI Desktop: Home → Refresh.
 
-(l'étape 2 reste manuelle : l'actualisation automatique programmée nécessite
-le Power BI Service avec une licence Pro, volontairement évitée ici.)
+(Step 2 remains manual: scheduled automatic refresh requires the Power BI
+Service with a Pro license, deliberately avoided here.)
 
-## Défis rencontrés et décisions prises
+## Challenges Encountered and Decisions Made
 
-**Biais d'échantillonnage détecté** : sur les 500 premiers rapports extraits,
-499 étaient marqués comme doublons par openFDA.
+**Sampling bias detected**: of the first 500 reports extracted, 499 were
+flagged as duplicates by openFDA.
 
-**Première hypothèse (invalidée)** : élargir l'échantillon à 20 000 rapports
-suffirait à diluer le biais. Vérification après extraction : 19 380/20 000
-(96,9%) toujours marqués doublons — l'hypothèse était fausse.
+**First hypothesis (invalidated)**: widening the sample to 20,000 reports
+would be enough to dilute the bias. Verification after extraction:
+19,380/20,000 (96.9%) were still flagged as duplicates — the hypothesis was
+wrong.
 
-**Vrai diagnostic** : l'API openFDA renvoie ses résultats dans un ordre
-interne non documenté. Les identifiants de rapports doublons se suivaient en
-séquence quasi continue, signe d'un unique gros lot de soumissions en masse
-regroupé par cet ordre par défaut.
+**Real diagnosis**: the openFDA API returns results in an undocumented
+internal order. The duplicate report IDs followed an almost continuous
+sequence, a sign of a single large batch of mass submissions grouped by this
+default ordering.
 
-**Correction effective** : ajout d'un tri explicite (`sort=receivedate:asc`)
-pour parcourir les rapports par date plutôt que dans l'ordre interne de
-l'API. Résultat : ~2% de doublons — un taux cohérent avec la littérature sur
-les données FAERS. Un dédoublonnage défensif a également été ajouté côté
-extraction pour se prémunir des chevauchements de pagination.
+**Effective fix**: added an explicit sort (`sort=receivedate:asc`) to page
+through reports by date rather than the API's internal order. Result: ~2%
+duplicates — a rate consistent with the literature on FAERS data. A
+defensive deduplication step was also added on the extraction side, as a
+safeguard against pagination overlaps.
 
-**Contrainte technique découverte** : l'API openFDA plafonne `skip` à
-25 000, soit un maximum de 26 000 rapports accessibles par pagination
-simple (skip/limit). Au-delà, la stratégie `search_after` (curseur) serait
-nécessaire — hors scope pour ce projet.
+**Technical constraint discovered**: the openFDA API caps `skip` at 25,000,
+meaning a maximum of 26,000 reports are reachable through simple pagination
+(skip/limit). Beyond that, the `search_after` (cursor) strategy would be
+required — out of scope for this project.

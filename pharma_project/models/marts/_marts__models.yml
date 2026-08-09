@@ -2,10 +2,10 @@ version: 2
 
 models:
   - name: fct_drug_adverse_events
-    description: "Un médicament associé à un rapport d'effet indésirable, avec les informations du rapport (gravité, date, patient)."
+    description: "One drug associated with an adverse event report, along with report details (seriousness, date, patient)."
     columns:
       - name: report_id
-        description: "Référence vers le rapport source."
+        description: "Reference to the source report."
         tests:
           - not_null
           - relationships:
@@ -14,9 +14,15 @@ models:
       - name: drug_name
         tests:
           - not_null
+      - name: is_serious
+        description: "True if the report was flagged as a serious case by openFDA."
+      - name: patient_age
+        description: "Patient's age at the time of the report, in years. Can be NULL if not reported."
+      - name: patient_sex_code
+        description: "Patient's sex code as reported (raw openFDA code)."
 
   - name: fct_reaction_adverse_events
-    description: "Une réaction associée à un rapport d'effet indésirable, avec les informations du rapport (gravité, date, patient)."
+    description: "One reaction associated with an adverse event report, along with report details (seriousness, date, patient)."
     columns:
       - name: report_id
         tests:
@@ -27,3 +33,7 @@ models:
       - name: reaction_name
         tests:
           - not_null
+      - name: is_serious
+        description: "True if the report was flagged as a serious case by openFDA."
+      - name: age_bracket
+        description: "Patient age grouped into brackets (0-17, 18-44, 45-64, 65+, or Unknown if not reported)."
