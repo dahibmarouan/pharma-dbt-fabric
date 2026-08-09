@@ -41,6 +41,10 @@ jobs:
                 threads: 4
           EOF
 
+      - name: Preparer le dossier de la base DuckDB
+        working-directory: pharma_project
+        run: mkdir -p data
+
       - name: dbt build
         working-directory: pharma_project
         run: dbt build
