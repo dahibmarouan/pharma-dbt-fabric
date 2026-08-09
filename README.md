@@ -74,7 +74,7 @@ The dashboard answers the business question through four visuals:
 
 File: `dashboard/pharma_dashboard.pbix` (requires Power BI Desktop, free).
 
-![Power BI dashboard overview](image.png)
+![Power BI dashboard overview](assets/image.png)
 
 ## Updating the Power BI Dashboard
 

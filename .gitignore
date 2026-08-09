@@ -219,3 +219,5 @@ __marimo__/
 
 data/
 *.duckdb
+
+# Project-specific ignores: environment, secrets, generated data and artifacts
