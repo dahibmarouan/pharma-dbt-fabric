@@ -63,6 +63,22 @@ réécriture du SQL.
    dbt docs serve
 ```
 
+## Mettre à jour le dashboard Power BI
+
+Le dashboard importe des données depuis des fichiers CSV statiques (le
+connecteur DuckDB natif de Power BI repose sur un driver ODBC peu fiable en
+pratique). Pour rafraîchir les chiffres après une modification des données :
+
+1. Depuis la racine du projet (`venv` actif), lancer le script qui reconstruit
+   les modèles dbt et régénère les exports CSV :
+```powershell
+   .\scripts\refresh_data.ps1
+```
+2. Dans Power BI Desktop : Accueil → Actualiser.
+
+(l'étape 2 reste manuelle : l'actualisation automatique programmée nécessite
+le Power BI Service avec une licence Pro, volontairement évitée ici.)
+
 ## Défis rencontrés et décisions prises
 
 **Biais d'échantillonnage détecté** : sur les 500 premiers rapports extraits,
