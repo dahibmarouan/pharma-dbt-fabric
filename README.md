@@ -1,4 +1,4 @@
-# Pharma DBT Fabric
+# Pharma Adverse Events dbt
 
 Data pipeline on adverse drug event reports, built with Python, dbt, and
 DuckDB — a portfolio project for a career transition into the Analytics
